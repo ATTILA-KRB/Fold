@@ -175,6 +175,8 @@ cp "$appcast_dir/appcast.xml" "$out/appcast.xml"
 print "    $(du -h "$dmg" | cut -f1) DMG, $(du -h "$zip" | cut -f1) ZIP"
 
 if [[ "$publish" != true ]]; then
+  print "==> Verifying the artifacts"
+  ./scripts/verify-release.sh || exit 1
   print "\nDry run complete. Artifacts in ${out}:"
   ls -lh "$dmg" "$zip" "$out/appcast.xml"
   print "\nNothing was published. Re-run with --publish to create the GitHub release and update docs/appcast.xml."
@@ -196,6 +198,8 @@ git add docs/appcast.xml
 git commit -q -m "Publie le flux de mise a jour ${version}" || print "    (nothing to commit)"
 git push origin HEAD
 
-print "\nPublished. Verify:"
-print "  curl -sSI https://github.com/${REPO}/releases/latest/download/Fold-macOS.dmg | head -1"
-print "  curl -sS https://raw.githubusercontent.com/${REPO}/main/docs/appcast.xml | grep -c ${tag}"
+print "==> Verifying the published release"
+./scripts/verify-release.sh --public || exit 1
+
+print "\nPublished: https://github.com/${REPO}/releases/tag/${tag}"
+print "Re-run ./scripts/verify-release.sh --public at any time to re-check the delivery."

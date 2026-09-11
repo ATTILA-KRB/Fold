@@ -52,23 +52,15 @@ Sparkle signatures authenticate the update payload. They do not replace Develope
    ```
 
    Archive, export with Developer ID, notarize the app, staple it, build the DMG, notarize and staple the DMG, then generate the appcast. Everything lands in `build/release/`; nothing is published. Expect 5–15 minutes for the two notarization submissions.
-4. Check the artifacts: `build/release/Fold-macOS.dmg`, `build/release/Fold-macOS.zip`, `build/release/appcast.xml`, and the submission ids in `build/release/notary-*.log`.
+4. Verify the artifacts: `./scripts/verify-release.sh` (the release script already runs it at the end of a dry run). It checks the exported signature, the bundled entitlements, both staples, Gatekeeper's verdict on app and image, the generated feed against `project.yml`, the Sparkle archive, and that `Fold.xcodeproj` still matches `project.yml`.
 5. Publish:
 
    ```sh
    ./scripts/release.sh --publish
    ```
 
-   Creates the GitHub release `vX.Y.Z` with the DMG and the ZIP, copies the feed to `docs/appcast.xml`, commits and pushes it. Publish the release before the feed — a feed pointing at a missing asset serves every client a 404.
-6. Verify delivery:
-
-   ```sh
-   curl -sSI https://github.com/ATTILA-KRB/Fold/releases/latest/download/Fold-macOS.dmg | head -1
-   curl -sS https://raw.githubusercontent.com/ATTILA-KRB/Fold/main/docs/appcast.xml | grep -c v1.0.0
-   xcrun stapler validate build/release/Fold.app
-   ```
-
-   Compare the served `content-length` with `stat -f %z build/release/Fold-macOS.dmg`. Cloudflare-style caching is not in play here — GitHub serves the bytes directly — but a browser user agent may still be needed if a proxy blocks scripted requests.
+   Creates the GitHub release `vX.Y.Z` with the DMG and the ZIP, copies the feed to `docs/appcast.xml`, commits and pushes it, then runs `./scripts/verify-release.sh --public` to compare the published bytes with the local ones. Publish the release before the feed — a feed pointing at a missing asset serves every client a 404.
+6. If a step fails after publication, inspect the report; the script prints the concrete mismatch (size, missing asset, feed not on `main`) rather than a generic error.
 
 ## DMG naming
 
