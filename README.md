@@ -41,7 +41,10 @@ brew install xcodegen
 xcodegen generate             # only needed after changing project.yml
 ./scripts/build.sh --signed   # local testing
 ./scripts/build.sh            # ad-hoc, no certificate needed
+make verify                   # build, then the app, shader and window checks
 ```
+
+`make verify` runs `scripts/verify.sh` (animation, lifecycle, saved settings, rendered frames) and `scripts/verify-capture.sh` (capture exclusion, and that pausing leaves no overlay panel above the menu bar). Neither is part of CI: the first needs a signed build, the second a logged-in desktop with Screen Recording permission.
 
 Test the live effect with `--signed`. Screen Recording permission is stored per code identity: an ad-hoc signature has no team, so macOS keys the grant on the binary's own hash, every rebuild changes it, and the app asks for permission again even though System Settings shows the toggle as on. A Developer ID signature pins the grant to the team and to `com.attila-krb.Fold`, so it survives rebuilds. Keep the ad-hoc build for CI and for building without a certificate.
 
