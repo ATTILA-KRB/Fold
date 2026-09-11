@@ -4,7 +4,7 @@
   const system = matchMedia('(prefers-color-scheme: dark)');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let preference = null;
-  try { preference = localStorage.getItem('bendmac-theme'); } catch {}
+  try { preference = localStorage.getItem('fold-theme'); } catch {}
   if (preference !== 'light' && preference !== 'dark') preference = null;
   let button;
   let transition;
@@ -32,7 +32,7 @@
       // Finish an in-flight fold before accepting the next one.
       if (transition) return;
       preference = root.dataset.theme === 'dark' ? 'light' : 'dark';
-      try { localStorage.setItem('bendmac-theme', preference); } catch {}
+      try { localStorage.setItem('fold-theme', preference); } catch {}
       if (reduced.matches || !document.startViewTransition) {
         apply(preference);
         return;

@@ -1,6 +1,6 @@
 (async () => {
   const counter = document.getElementById('download-count');
-  const cacheKey = 'bendmac-downloads';
+  const cacheKey = 'fold-downloads';
   const cacheLifetime = 15 * 60 * 1000;
 
   function show(count) {
@@ -22,7 +22,7 @@
   try {
     let total = 0;
     for (let page = 1; ; page++) {
-      const response = await fetch(`https://api.github.com/repos/IuCC123/BendMac/releases?per_page=100&page=${page}`, {
+      const response = await fetch(`https://api.github.com/repos/ATTILA-KRB/Fold/releases?per_page=100&page=${page}`, {
         headers: { Accept: 'application/vnd.github+json' },
         signal: AbortSignal.timeout(6000),
       });
