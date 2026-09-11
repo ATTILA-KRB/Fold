@@ -23,9 +23,11 @@ fragment float4 bendFragment(VertexOut in [[stage_in]], texture2d<float> desktop
     float hingeWeight=smoothstep(0.0,0.22,height);
     // Concentrate defocus at the upper edge, including the menu bar. Keeping
     // the centre readable avoids making the whole desktop look out of focus.
-    // A 2.1 power makes the blur arrive progressively across the upper half
-    // instead of snapping in at the very top.
-    float radius=52.0*fold*pow(height,2.1)*(p.style>1.5 ? 1.25 : 1.0);
+    // The 4.5 power holds the desktop sharp for most of the fold and only then
+    // defocuses, with the blur gathering against the top edge; measured on
+    // rendered frames, a 2.1 power lost sharpness from the first degrees of the
+    // fold and read as "the blur arrives too early".
+    float radius=56.0*fold*pow(height,4.5)*(p.style>1.5 ? 1.25 : 1.0);
     float3 color;
     if (p.blur<0.001) color=desktop.sample(s,uv).rgb;
     else if(radius<4.0) color=mix(desktop.sample(s,uv).rgb,fine.sample(s,uv).rgb,smoothstep(0.0,4.0,radius));

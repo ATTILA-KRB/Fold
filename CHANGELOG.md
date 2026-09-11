@@ -9,7 +9,7 @@
 
 ### Changed
 
-- Blur ramps in across the whole upper half (`pow(height, 2.1)` instead of `3.5`, radius 52) instead of arriving almost entirely at the very top.
+- Blur now holds the desktop sharp for most of the fold and gathers against the top edge (`pow(height, 4.5)`, radius 56). The first attempt at a smoother ramp (`pow(height, 2.1)`) blurred from the first degrees of the fold and read as arriving too early.
 
 ## 1.0.0 - 2026-09-11
 
