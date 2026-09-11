@@ -10,6 +10,15 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Fail if the checked-in project drifts from project.yml
+        run: |
+          xcodegen generate
+          git diff --exit-code -- Fold.xcodeproj || {
+            echo "::error::Fold.xcodeproj is stale. Run 'xcodegen generate' and commit the result."
+            exit 1
+          }
       - name: Build checked-in Xcode project
         run: |
           if ! xcrun metal --version; then

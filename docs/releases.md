@@ -1,50 +1,81 @@
-# Publishing an update
+# Publishing a release
 
-Fold uses Sparkle 2 for in-app updates. The app reads `docs/appcast.xml` from this repository and downloads signed archives from GitHub Releases.
+Fold ships outside the App Store: a Developer ID signed and notarized DMG for downloads, and a Sparkle 2 feed for in-app updates.
 
-## Signing key
+- App reads `docs/appcast.xml` from this repository.
+- Sparkle downloads the signed ZIP from GitHub Releases.
+- `scripts/release.sh` does the whole chain locally on a Mac that holds the Developer ID identity and Apple notarization access. CI is not required and must not be the primary path: the signing identity and the Sparkle key live on the maintainer's machine.
 
-The private update-signing key is stored in the macOS login Keychain under the Sparkle account `com.attila-krb.Fold`. The public key is in `project.yml`. Keep a secure backup of the private key outside this repository. Losing it would prevent existing installations from trusting future updates.
+## Prerequisites
 
-To create the key pair, or to export a backup of an existing one:
+| What | Check |
+|---|---|
+| Xcode, not CommandLineTools | `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -version` |
+| Developer ID identity | `security find-identity -v -p codesigning` lists `Developer ID Application: … (5FMH389VS7)` |
+| Notarization credentials | `xcrun notarytool history --keychain-profile popcorn-notary` returns a history |
+| XcodeGen | `xcodegen --version` |
+| Sparkle tools | resolved by SPM on the first build, found under `DerivedData/**/artifacts/sparkle/Sparkle/bin` |
+
+The notary profile is per Apple ID, not per app, so it is shared with the other apps of this team. `popcorn-notary` is the profile name by default; override with `NOTARY_PROFILE=<name>`.
+
+The script pins the Developer ID certificate by SHA-1 (`DEVELOPER_ID_HASH`, default `561D8D381F89B361D335724A008AAAC5AE9E688B`) because two certificates in this keychain share the display name and `codesign --sign "<name>"` fails as ambiguous. Both app and DMG are signed with a secure timestamp, notarized, and stapled; `spctl -a -vvv -t install` must accept the shipped DMG.
+
+## Signing model
+
+Two entitlement files, on purpose:
+
+- `Fold/Fold.entitlements` — used by XcodeGen for ordinary builds. It carries `com.apple.security.cs.disable-library-validation`, which an **ad-hoc** signature needs because it has no team ID to match the embedded Sparkle framework against. `scripts/build.sh` and CI produce this build.
+- `packaging/Fold.entitlements` — deliberately empty, used only by `scripts/release.sh`. With Developer ID signing, Xcode re-signs the embedded framework with the same team, so the exception is neither needed nor wanted in a shipped app. `scripts/release.sh` fails the release if the exception is present in the exported app.
+
+## Update signing key
+
+The private update-signing key lives in the macOS login Keychain under the Sparkle account `com.attila-krb.Fold`. The public half is in `project.yml`. Back the private half up outside this repository: losing it prevents existing installations from trusting future updates.
 
 ```sh
-SPARKLE_BIN="$(find ~/Library/Developer/Xcode/DerivedData -path '*sparkle/Sparkle/bin' -type d | head -1)"
-"$SPARKLE_BIN/generate_keys" --account com.attila-krb.Fold
-"$SPARKLE_BIN/generate_keys" --account com.attila-krb.Fold -x /path/to/private/key/outside/repo
+SPARKLE_BIN="$(find ~/Library/Developer/Xcode/DerivedData -path '*artifacts/sparkle/Sparkle/bin' -type d | head -1)"
+"$SPARKLE_BIN/generate_keys" --account com.attila-krb.Fold                      # create / print the public key
+"$SPARKLE_BIN/generate_keys" --account com.attila-krb.Fold -x /path/outside/repo # back the private key up
 ```
 
-Use the same `--account` value for `generate_appcast`, or Sparkle will sign with the wrong key and every client will reject the update.
+Always pass the same `--account` to `generate_appcast`: a different account signs with a different key and every client rejects the update.
 
-The current ad-hoc build uses an app-scoped library-validation exception because it has no Apple Team ID. Remove that exception when switching the app and embedded framework to Developer ID signing.
+Sparkle signatures authenticate the update payload. They do not replace Developer ID signing or notarization for the first download.
 
-Sparkle signatures authenticate updates. They do not replace Apple Developer ID signing or notarization for the first download.
+## Procedure
 
-## Release steps
-
-1. Increase `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`. The build number must increase with every release.
-2. Run `scripts/build.sh`.
-3. Download the matching Sparkle distribution to get its `generate_appcast` tool.
-4. Create a release folder containing only the new app archive:
+1. Bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`. The build number must increase on every release, including a re-release of the same version.
+2. Update `CHANGELOG.md`.
+3. Dry run:
 
    ```sh
-   mkdir -p build/update
-   ditto -c -k --sequesterRsrc --keepParent build/Build/Products/Release/Fold.app build/update/Fold-macOS.zip
+   ./scripts/release.sh
    ```
 
-5. Copy the existing `docs/appcast.xml` into that folder. Generate the feed with your release tag in the download URL:
+   Archive, export with Developer ID, notarize the app, staple it, build the DMG, notarize and staple the DMG, then generate the appcast. Everything lands in `build/release/`; nothing is published. Expect 5–15 minutes for the two notarization submissions.
+4. Check the artifacts: `build/release/Fold-macOS.dmg`, `build/release/Fold-macOS.zip`, `build/release/appcast.xml`, and the submission ids in `build/release/notary-*.log`.
+5. Publish:
 
    ```sh
-   /path/to/Sparkle/bin/generate_appcast --account com.attila-krb.Fold --maximum-deltas 0 --download-url-prefix https://github.com/ATTILA-KRB/Fold/releases/download/v1.0.0/ build/update
+   ./scripts/release.sh --publish
    ```
 
-6. Upload the exact signed ZIP to that GitHub release. Do not rebuild or modify it after signing.
-7. Copy the generated `appcast.xml` back to `docs/appcast.xml` and publish it only after the release asset is available.
+   Creates the GitHub release `vX.Y.Z` with the DMG and the ZIP, copies the feed to `docs/appcast.xml`, commits and pushes it. Publish the release before the feed — a feed pointing at a missing asset serves every client a 404.
+6. Verify delivery:
 
-Never commit private keys. Contributors can compile the app with the public key; only the release maintainer needs access to the private key.
+   ```sh
+   curl -sSI https://github.com/ATTILA-KRB/Fold/releases/latest/download/Fold-macOS.dmg | head -1
+   curl -sS https://raw.githubusercontent.com/ATTILA-KRB/Fold/main/docs/appcast.xml | grep -c v1.0.0
+   xcrun stapler validate build/release/Fold.app
+   ```
 
-`docs/appcast.xml` is committed empty until the first release, so a fresh install finds no update instead of an entry it cannot verify. The upstream project's feed entries cannot be reused: they are signed with a key this app does not trust.
+   Compare the served `content-length` with `stat -f %z build/release/Fold-macOS.dmg`. Cloudflare-style caching is not in play here — GitHub serves the bytes directly — but a browser user agent may still be needed if a proxy blocks scripted requests.
 
-## Drag-to-install download
+## DMG naming
 
-Run `./scripts/dmg.sh` after building to create `build/Fold-macOS.dmg`. It generates the Retina background and Finder layout without opening Finder. Upload the DMG alongside the ZIP and keep the filename `Fold-macOS.dmg` on every release. The website uses GitHub’s `/releases/latest/download/Fold-macOS.dmg` redirect, so the buttons follow the latest stable release without a website update. Publish each release only after both assets are uploaded. Keep the signed ZIP for Sparkle updates.
+`scripts/dmg.sh` always writes `Fold-macOS.dmg`, so the website and the README can use GitHub's `/releases/latest/download/Fold-macOS.dmg` redirect and follow the newest release without any edit. Keep the filename stable across releases, and keep the signed ZIP (not the DMG) as the Sparkle payload.
+
+## Notes
+
+- Never commit private keys or notary credentials. Contributors compile with the public key only.
+- `docs/appcast.xml` is committed empty until the first release, so a fresh install finds nothing to verify rather than an unverifiable item. Upstream BendMac feed entries cannot be reused: they are signed with a key this app does not trust.
+- `/opt/homebrew/bin` is not on the PATH of every agent shell; `scripts/release.sh` prepends it.

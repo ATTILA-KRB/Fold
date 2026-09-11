@@ -18,7 +18,7 @@ Requires **macOS 14+** and an **Apple silicon MacBook with a lid-angle sensor**.
 2. Open Fold and turn on **General → Enable Fold**.
 3. Grant access in **System Settings → Privacy & Security → Screen & System Audio Recording**.
 
-Release builds are ad-hoc signed for now, so you may need to approve the app in Privacy & Security the first time you open it.
+Release downloads are Developer ID signed and notarized by Apple. Builds you make yourself with `scripts/build.sh` are only ad-hoc signed, so macOS may ask you to allow the app in Privacy & Security the first time you open it.
 
 ## Using it
 

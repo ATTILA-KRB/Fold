@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Distribution entitlements. Deliberately empty: with Developer ID signing
+	  Xcode re-signs the embedded Sparkle framework with the same team, so no
+	  library-validation exception is needed.
+
+	  The ad-hoc development build uses Fold/Fold.entitlements instead, which
+	  carries that exception, because an ad-hoc signature has no team ID to
+	  match the framework against.
+	-->
+</dict>
+</plist>

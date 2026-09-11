@@ -22,6 +22,17 @@ Use native macOS frameworks. Do not introduce screen-content uploads, persistent
 
 Preserve keyboard access and reduced-motion behavior. Keep the landing page's Bendy attribution. Use public, shareable test content in demonstrations.
 
+## Upstream
+
+Fold is a fork of [BendMac](https://github.com/IuCC123/BendMac). The upstream repository is configured as the `upstream` remote:
+
+```sh
+git fetch upstream
+git log --oneline HEAD..upstream/main     # what upstream has that we don't
+```
+
+Keep the fork attribution in `README.md` and the copyright line in `LICENSE` when touching either file: both are required by the MIT license and are the credit the original author asked for. Bug fixes that are not Fold-specific are worth offering upstream as a pull request before or alongside the fork.
+
 ## License
 
 Contributions are distributed under the repository's MIT license. Include appropriate attribution for any third-party code or assets you add.
