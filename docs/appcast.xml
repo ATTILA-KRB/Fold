@@ -4,5 +4,13 @@
         <title>Fold</title>
         <description>Updates for Fold.</description>
         <language>en</language>
+        <item>
+            <title>1.0.0</title>
+            <pubDate>Fri, 11 Sep 2026 18:35:57 +0200</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>1.0.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/ATTILA-KRB/Fold/releases/download/v1.0.0/Fold-macOS.zip" length="2025658" type="application/octet-stream" sparkle:edSignature="+tjj+WCciiBZpsSPZlV7mVwgMF3zomXq+h2T8nIYbT5y+KHKc5N7cb0jtssryP4EuOTyg1sXHlOJA5MLddJbDw=="/>
+        </item>
     </channel>
 </rss>
