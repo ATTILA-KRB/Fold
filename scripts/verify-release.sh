@@ -1,15 +1,16 @@
 #!/bin/zsh
-# Verify the artifacts a release actually ships. Run it after `release.sh`
-# (dry run or publish) and before announcing anything.
+# Verify what a release ships. Run it after `release.sh` (a dry run runs it
+# automatically) and before announcing anything.
 #
-#   ./scripts/verify-release.sh            # local artifacts only
-#   ./scripts/verify-release.sh --public   # also fetch the published DMG,
-#                                          # the served feed and the GitHub release
+#   ./scripts/verify-release.sh            local artifacts in build/release
+#   ./scripts/verify-release.sh --public   also the published delivery
 #
-# It asserts on the shipped objects, not on the intent: signature properties of
-# the exported app, Gatekeeper's verdict on both app and image, stapled tickets,
-# the generated feed, and — with --public — that the bytes GitHub serves are the
-# bytes you notarized.
+# The local pass is self-consistent: every value it checks comes from project.yml
+# or from the artifacts themselves. The --public pass is self-consistent too, so
+# it stays meaningful at any time and does not depend on what build/release
+# currently holds: it re-reads the committed feed and makes GitHub prove that the
+# asset it serves is the byte length that feed declares, which is exactly what
+# Sparkle checks before installing.
 set -uo pipefail
 cd "${0:A:h}/.."
 
@@ -26,10 +27,9 @@ public=false
 out="build/release"
 app="$out/Fold.app"
 dmg="$out/Fold-macOS.dmg"
+feed="$out/appcast.xml"
 zip="build/appcast/Fold-macOS.zip"
-feed=docs/appcast.xml
-scratch=$(mktemp -d "${TMPDIR:-/tmp}/hermes-verify-fold.XXXXXX")
-trap 'rm -rf "$scratch"' EXIT
+committed_feed=docs/appcast.xml
 
 version=$(awk '/MARKETING_VERSION:/ {gsub(/'"'"'/,"",$2); print $2; exit}' project.yml)
 build_number=$(awk '/CURRENT_PROJECT_VERSION:/ {gsub(/'"'"'/,"",$2); print $2; exit}' project.yml)
@@ -51,7 +51,10 @@ print "1. Exported bundle"
 sign_output=$(codesign -dv --verbose=4 "$app" 2>&1)
 check "Identifier=com.attila-krb.Fold" "$sign_output" "bundle identifier"
 check "TeamIdentifier=${TEAM_ID}" "$sign_output" "signing team"
-check "flags=0x10000(runtime)" "$sign_output" "hardened runtime"
+# Match the flag word: an ad-hoc signature encodes the same hardening as
+# 0x10002(adhoc,runtime), where the literal "flags=0x10000(runtime)" never appears.
+codesign_line=$(print -r -- "$sign_output" | awk '/^CodeDirectory/ {print; exit}')
+check "runtime" "$codesign_line" "hardened runtime"
 entitlements=$(codesign -d --entitlements - "$app" 2>&1)
 [[ "$entitlements" != *"disable-library-validation"* ]] \
   && ok "no library-validation exception" \
@@ -62,11 +65,13 @@ check "$public_key" "$(plutil -extract SUPublicEDKey raw "$app/Contents/Info.pli
 check "${REPO}/" "$(plutil -extract SUFeedURL raw "$app/Contents/Info.plist")" "feed URL points at this repository"
 
 print "2. Generated icon matches the app"
+scratch=$(mktemp -d "${TMPDIR:-/tmp}/hermes-verify-icon.XXXXXX")
 xcrun swift scripts/icon.swift --variant refined --icns "$scratch/AppIcon.icns" > /dev/null \
   || bad "scripts/icon.swift failed"
 cmp -s "$scratch/AppIcon.icns" Fold/AppIcon.icns \
   && ok "Fold/AppIcon.icns == icon.swift output" \
-  || bad "Fold/AppIcon.icns differs from the generator"
+  || bad "Fold/AppIcon.icns differs from the generator (regenerate and commit it)"
+rm -rf "$scratch"
 cmp -s Fold/AppIcon.icns "$app/Contents/Resources/AppIcon.icns" \
   && ok "bundled icon matches the repository icon" \
   || bad "bundled icon differs from Fold/AppIcon.icns"
@@ -83,7 +88,7 @@ codesign --verify --strict "$dmg" > /dev/null 2>&1 \
   && ok "disk image signature is valid" \
   || bad "disk image signature is invalid"
 
-print "4. Sparkle feed"
+print "4. Generated Sparkle feed"
 # plutil lints plists, not RSS — it rejects a valid appcast with "unknown tag rss".
 xmllint --noout "$feed" 2> /dev/null && ok "feed is well-formed XML" || bad "feed is not well-formed"
 feed_body=$(<"$feed")
@@ -105,20 +110,23 @@ git diff --quiet -- Fold.xcodeproj \
   || bad "Fold.xcodeproj drifts from project.yml (regenerate and commit)"
 
 if [[ "$public" == true ]]; then
-  print "7. Published bytes"
-  local_size=$(stat -f %z "$dmg")
-  remote_size=$(curl -sSIL --max-time 30 "https://github.com/${REPO}/releases/latest/download/Fold-macOS.dmg" \
-    | tr -d '\r' | awk 'tolower($1)=="content-length:" {n=$2} END {print n}')
-  [[ "$local_size" == "$remote_size" ]] \
-    && ok "public DMG is byte-identical ($local_size bytes)" \
-    || bad "public DMG size $remote_size != local $local_size"
+  print "7. Published delivery (read from the network, independent of this build)"
+  served=$(curl -sS --max-time 30 "https://raw.githubusercontent.com/${REPO}/main/${committed_feed}")
+  committed=$(<"$committed_feed")
+  [[ -n "$served" && "$served" == "$committed" ]] \
+    && ok "served feed == committed ${committed_feed}" \
+    || bad "the served feed differs from ${committed_feed} (not committed on main, or not pushed)"
   assets=$(gh release view "$tag" -R "$REPO" --json assets --jq '[.assets[].name] | join(",")' 2>/dev/null)
   check "Fold-macOS.dmg" "$assets" "release carries the DMG"
   check "Fold-macOS.zip" "$assets" "release carries the Sparkle archive"
-  served=$(curl -sS --max-time 30 "https://raw.githubusercontent.com/${REPO}/main/${feed}")
-  [[ "$served" == "$feed_body" ]] \
-    && ok "served feed == committed feed" \
-    || bad "the served feed differs from $feed (not committed on main yet?)"
+  # What Sparkle does before installing: download the ZIP, check its length
+  # against the feed it just read, then verify the EdDSA signature.
+  declared=$(print -r -- "$served" | grep -o 'length="[0-9]*"' | head -1 | tr -dc '0-9')
+  served_zip=$(curl -sSIL --max-time 30 "https://github.com/${REPO}/releases/latest/download/Fold-macOS.zip" \
+    | tr -d '\r' | awk 'tolower($1)=="content-length:" {n=$2} END {print n}')
+  [[ -n "$declared" && "$declared" == "$served_zip" ]] \
+    && ok "served archive is ${declared} bytes, exactly what the feed declares" \
+    || bad "feed declares ${declared} bytes but GitHub serves ${served_zip}"
 fi
 
 print ""

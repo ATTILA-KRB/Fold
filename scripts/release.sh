@@ -100,7 +100,10 @@ codesign --verify --strict --verbose=2 "$app" 2>&1 | tail -2
 sign_output=$(codesign -dv --verbose=4 "$app" 2>&1)
 team=$(print -r -- "$sign_output" | awk -F= '/TeamIdentifier/ {print $2}')
 [[ "$team" == "$TEAM_ID" ]] || { print -u2 "Wrong team identifier: ${team}"; exit 1; }
-[[ "$sign_output" == *"flags=0x10000(runtime)"* ]] || {
+codesign_line=$(print -r -- "$sign_output" | awk '/^CodeDirectory/ {print; exit}')
+# Match the flag word, not "flags=0x10000(runtime)": an ad-hoc signature
+# encodes the same hardening as 0x10002(adhoc,runtime).
+[[ "$codesign_line" == *runtime* ]] || {
   print -u2 "Hardened runtime is not enabled on the exported app."; exit 1
 }
 entitlements=$(codesign -d --entitlements - "$app" 2>&1)

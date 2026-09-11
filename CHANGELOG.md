@@ -11,6 +11,13 @@
 
 - Blur now holds the desktop sharp for most of the fold and gathers against the top edge (`pow(height, 4.5)`, radius 56). The first attempt at a smoother ramp (`pow(height, 2.1)`) blurred from the first degrees of the fold and read as arriving too early.
 
+### Developer checks
+
+- `./scripts/build.sh --signed` produces a Developer ID build. Screen Recording permission is stored per code identity, and an ad-hoc signature's is keyed on the binary's hash, so every rebuild dropped the grant and re-prompted while System Settings showed it as on.
+- The app icon is generated reproducibly: the drawing goes through an explicit device-RGB bitmap instead of `NSImage.cgImage(forProposedRect:)`, which inherited the display's colour space and produced different bytes from one run to the next. The icon is unchanged to the eye (mean difference 0.39/255, edges only).
+- Argument typos in `scripts/build.sh` now fail instead of silently falling back to an ad-hoc build.
+- The hardened-runtime check in the release scripts matches the flag word: ad-hoc encodes it as `0x10002(adhoc,runtime)`, where the literal `flags=0x10000(runtime)` does not appear.
+
 ## 1.0.0 - 2026-09-11
 
 First release under the Fold identity. Fold is a rebranded fork of BendMac 0.4.8; the effect, sensor access and capture pipeline are unchanged from that baseline.

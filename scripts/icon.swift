@@ -25,8 +25,8 @@ func option(_ name: String) -> String? {
 
 let variant = Variant(rawValue: option("--variant") ?? "refined") ?? .refined
 let canvas: CGFloat = 1024
-let margin: CGFloat = 0.09          // macOS style breathing room
-let radius: CGFloat = 0.2237        // squircle-ish corner radius (Apple's ratio)
+let margin: CGFloat = 0.09  // macOS style breathing room
+let radius: CGFloat = 0.2237  // squircle-ish corner radius (Apple's ratio)
 
 func panel(_ n: CGFloat) -> NSRect {
     let inset = n * margin
@@ -53,92 +53,116 @@ func roundedPanel(_ rect: NSRect) -> NSBezierPath {
         yRadius: rect.width * radius / (1 - 2 * margin))
 }
 
-func draw(_ n: CGFloat) -> CGImage {
-    let image = NSImage(size: NSSize(width: n, height: n), flipped: false) { _ in
-        let rect = panel(n)
-        let panelPath = roundedPanel(rect)
+/// The drawing itself, into whatever context is current.
+func drawShape(_ n: CGFloat) {
+    let rect = panel(n)
+    let panelPath = roundedPanel(rect)
 
-        switch variant {
-        case .refined:
-            NSGradient(colors: [
-                NSColor(srgbRed: 0.07, green: 0.26, blue: 0.72, alpha: 1),
-                NSColor(srgbRed: 0.45, green: 0.71, blue: 1.0, alpha: 1),
-            ])!.draw(in: panelPath, angle: 68)
-        case .graphite:
-            NSGradient(colors: [
-                NSColor(srgbRed: 0.12, green: 0.12, blue: 0.14, alpha: 1),
-                NSColor(srgbRed: 0.27, green: 0.28, blue: 0.31, alpha: 1),
-            ])!.draw(in: panelPath, angle: 68)
-        case .hinge:
-            NSGradient(colors: [
-                NSColor(srgbRed: 0.03, green: 0.13, blue: 0.36, alpha: 1),
-                NSColor(srgbRed: 0.32, green: 0.58, blue: 0.95, alpha: 1),
-            ])!.draw(in: panelPath, angle: 90)
-        }
-
-        // The sheet.
-        let sheet = foldedSheet(
-            in: rect,
-            bottomWidth: variant == .hinge ? 0.68 : 0.58,
-            topWidth: variant == .hinge ? 0.42 : 0.34,
-            height: variant == .hinge ? 0.46 : 0.42)
-
-        let shadow = NSShadow()
-        shadow.shadowOffset = NSSize(width: 0, height: -n * 0.012)
-        shadow.shadowBlurRadius = n * 0.045
-        shadow.shadowColor = NSColor.black.withAlphaComponent(variant == .graphite ? 0.55 : 0.35)
-        shadow.set()
-
-        switch variant {
-        case .refined:
-            NSGradient(colors: [
-                NSColor(calibratedWhite: 1.0, alpha: 0.99),
-                NSColor(calibratedWhite: 0.82, alpha: 0.92),
-            ])!.draw(in: sheet, angle: 90)
-            sheet.lineWidth = n * 0.018
-            NSColor.white.setStroke()
-            sheet.stroke()
-        case .graphite:
-            NSGradient(colors: [
-                NSColor(calibratedWhite: 0.97, alpha: 1),
-                NSColor(calibratedWhite: 0.74, alpha: 1),
-            ])!.draw(in: sheet, angle: 90)
-            sheet.lineWidth = n * 0.014
-            NSColor(calibratedWhite: 0.99, alpha: 1).setStroke()
-            sheet.stroke()
-        case .hinge:
-            // Upper panel in white, lower panel a translucent sheen: the fold.
-            // The lower panel must share the upper panel's bottom width, or the
-            // silhouette breaks into three shapes instead of one folded sheet.
-            let upper = foldedSheet(in: rect, bottomWidth: 0.68, topWidth: 0.42, height: 0.3)
-            NSGradient(colors: [
-                NSColor(calibratedWhite: 1.0, alpha: 0.98),
-                NSColor(calibratedWhite: 0.85, alpha: 0.95),
-            ])!.draw(in: upper, angle: 90)
-            upper.lineWidth = n * 0.016
-            NSColor.white.setStroke()
-            upper.stroke()
-            let lower = foldedSheet(in: rect, bottomWidth: 0.68, topWidth: 0.68, height: 0.16)
-            NSColor(calibratedWhite: 1.0, alpha: 0.3).setFill()
-            lower.fill()
-        }
-        NSGraphicsContext.current?.cgContext.setShadow(offset: .zero, blur: 0, color: nil)
-
-        // Base / hinge mark, kept clear of the sheet.
-        let base = NSBezierPath(
-            roundedRect: NSRect(
-                x: rect.midX - rect.width * 0.28, y: rect.minY + rect.height * 0.2,
-                width: rect.width * 0.56, height: rect.height * 0.035),
-            xRadius: rect.height * 0.0175, yRadius: rect.height * 0.0175)
-        if variant == .graphite {
-            NSColor(srgbRed: 0.04, green: 0.52, blue: 1.0, alpha: 1).setFill()
-        } else {
-            NSColor.white.setFill()
-        }
-        base.fill()
-        return true
+    switch variant {
+    case .refined:
+        NSGradient(colors: [
+            NSColor(srgbRed: 0.07, green: 0.26, blue: 0.72, alpha: 1),
+            NSColor(srgbRed: 0.45, green: 0.71, blue: 1.0, alpha: 1),
+        ])!.draw(in: panelPath, angle: 68)
+    case .graphite:
+        NSGradient(colors: [
+            NSColor(srgbRed: 0.12, green: 0.12, blue: 0.14, alpha: 1),
+            NSColor(srgbRed: 0.27, green: 0.28, blue: 0.31, alpha: 1),
+        ])!.draw(in: panelPath, angle: 68)
+    case .hinge:
+        NSGradient(colors: [
+            NSColor(srgbRed: 0.03, green: 0.13, blue: 0.36, alpha: 1),
+            NSColor(srgbRed: 0.32, green: 0.58, blue: 0.95, alpha: 1),
+        ])!.draw(in: panelPath, angle: 90)
     }
-    return image.cgImage(forProposedRect: nil, context: nil, hints: nil)!
+
+    // The sheet.
+    let sheet = foldedSheet(
+        in: rect,
+        bottomWidth: variant == .hinge ? 0.68 : 0.58,
+        topWidth: variant == .hinge ? 0.42 : 0.34,
+        height: variant == .hinge ? 0.46 : 0.42)
+
+    let shadow = NSShadow()
+    shadow.shadowOffset = NSSize(width: 0, height: -n * 0.012)
+    shadow.shadowBlurRadius = n * 0.045
+    shadow.shadowColor = NSColor.black.withAlphaComponent(variant == .graphite ? 0.55 : 0.35)
+    shadow.set()
+
+    switch variant {
+    case .refined:
+        NSGradient(colors: [
+            NSColor(calibratedWhite: 1.0, alpha: 0.99),
+            NSColor(calibratedWhite: 0.82, alpha: 0.92),
+        ])!.draw(in: sheet, angle: 90)
+        sheet.lineWidth = n * 0.018
+        NSColor.white.setStroke()
+        sheet.stroke()
+    case .graphite:
+        NSGradient(colors: [
+            NSColor(calibratedWhite: 0.97, alpha: 1),
+            NSColor(calibratedWhite: 0.74, alpha: 1),
+        ])!.draw(in: sheet, angle: 90)
+        sheet.lineWidth = n * 0.014
+        NSColor(calibratedWhite: 0.99, alpha: 1).setStroke()
+        sheet.stroke()
+    case .hinge:
+        // Upper panel in white, lower panel a translucent sheen: the fold.
+        // The lower panel must share the upper panel's bottom width, or the
+        // silhouette breaks into three shapes instead of one folded sheet.
+        let upper = foldedSheet(in: rect, bottomWidth: 0.68, topWidth: 0.42, height: 0.3)
+        NSGradient(colors: [
+            NSColor(calibratedWhite: 1.0, alpha: 0.98),
+            NSColor(calibratedWhite: 0.85, alpha: 0.95),
+        ])!.draw(in: upper, angle: 90)
+        upper.lineWidth = n * 0.016
+        NSColor.white.setStroke()
+        upper.stroke()
+        let lower = foldedSheet(in: rect, bottomWidth: 0.68, topWidth: 0.68, height: 0.16)
+        NSColor(calibratedWhite: 1.0, alpha: 0.3).setFill()
+        lower.fill()
+    }
+    NSGraphicsContext.current?.cgContext.setShadow(offset: .zero, blur: 0, color: nil)
+
+    // Base / hinge mark, kept clear of the sheet.
+    let base = NSBezierPath(
+        roundedRect: NSRect(
+            x: rect.midX - rect.width * 0.28, y: rect.minY + rect.height * 0.2,
+            width: rect.width * 0.56, height: rect.height * 0.035),
+        xRadius: rect.height * 0.0175, yRadius: rect.height * 0.0175)
+    if variant == .graphite {
+        NSColor(srgbRed: 0.04, green: 0.52, blue: 1.0, alpha: 1).setFill()
+    } else {
+        NSColor.white.setFill()
+    }
+    base.fill()
+}
+
+/// Draws into an explicit device-RGB bitmap. Going through
+/// `NSImage.cgImage(forProposedRect:)` inherits the colour space of the display
+/// the process happens to run on, so the same drawing produced different bytes
+/// — and slightly different colours — from one run to the next. A generated
+/// asset has to be reproducible, or the committed icon drifts for no reason.
+func draw(_ n: CGFloat) -> CGImage {
+    guard
+        let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: Int(n), pixelsHigh: Int(n), bitsPerSample: 8,
+            samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+            bytesPerRow: 0, bitsPerPixel: 0),
+        let context = NSGraphicsContext(bitmapImageRep: rep)
+    else {
+        FileHandle.standardError.write("could not allocate a \(Int(n))px bitmap\n".data(using: .utf8)!)
+        exit(1)
+    }
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = context
+    drawShape(n)
+    NSGraphicsContext.restoreGraphicsState()
+    guard let image = rep.cgImage else {
+        FileHandle.standardError.write("bitmap produced no image\n".data(using: .utf8)!)
+        exit(1)
+    }
+    return image
 }
 
 func writePNG(_ image: CGImage, to path: String, size: CGFloat? = nil) {
