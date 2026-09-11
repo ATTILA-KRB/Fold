@@ -20,8 +20,12 @@ pkill -f "MacOS/Fold --smoke" 2>/dev/null || true
 [[ -f "$smoke_report" ]] || { print -u2 'The smoke run produced no report'; exit 1; }
 cat "$smoke_report"
 
-folds=$(awk -F= '/overlaysVisibleWhileFolded/ {gsub(/[^0-9]/, "", $2); print $2}' "$smoke_report")
-after=$(awk -F= '/overlaysVisibleAfterDisable/ {gsub(/[^0-9]/, "", $2); print $2}' "$smoke_report")
+# Extract by pattern, not by field: the report is one line holding several
+# key=value pairs, so awk -F= $2 returns "frames" for every key and the check
+# below could never fail.
+field() { grep -o "$2=[0-9]*" "$1" | head -1 | cut -d= -f2 }
+folds=$(field "$smoke_report" overlaysVisibleWhileFolded)
+after=$(field "$smoke_report" overlaysVisibleAfterDisable)
 [[ "$folds" -ge 1 ]] && print "PASS: the overlay counter sees a panel while folded ($folds)" \
   || { print -u2 "FAIL: the overlay counter saw no panel while folded, so the check below proves nothing"; exit 1; }
 [[ "$after" -eq 0 ]] && print "PASS: pausing left no overlay window behind" \
