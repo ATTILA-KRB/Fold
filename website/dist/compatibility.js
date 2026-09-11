@@ -90,7 +90,7 @@
     dialog.querySelector('#compat-source').hidden = true;
     if (model.status === 'Expected') {
       badge = 'Expected to work'; tone = 'caution';
-      copy = 'Lid sensor confirmed. Not yet tested with BendMac.';
+      copy = 'Lid sensor confirmed. Not yet tested with Fold.';
     } else if (model.status.startsWith('Tested')) {
       badge = 'Tested on M5 Air'; tone = 'success';
       copy = 'Both screen sizes have not been independently confirmed.';
@@ -143,7 +143,7 @@
     });
   });
   reference.addEventListener('toggle', () => { dialog.classList.toggle('show-reference', reference.open); });
-  const triggers = document.querySelectorAll('a[href$="/BendMac-macOS.dmg"]:not(#compatible-download), [data-compatibility]');
+  const triggers = document.querySelectorAll('a[href$="/Fold-macOS.dmg"]:not(#compatible-download), [data-compatibility]');
   triggers.forEach(trigger => {
     trigger.setAttribute('aria-haspopup', 'dialog');
     trigger.setAttribute('aria-controls', dialog.id);

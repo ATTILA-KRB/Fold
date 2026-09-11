@@ -24,7 +24,7 @@ for scale in [1, 2] {
     }
 
     text(
-        "BendMac", top: 44, height: 44, font: .systemFont(ofSize: 32, weight: .semibold),
+        "Fold", top: 44, height: 44, font: .systemFont(ofSize: 32, weight: .semibold),
         color: .init(calibratedWhite: 0.12, alpha: 1))
     text(
         "A little flexibility for your desktop.", top: 93, height: 24, font: .systemFont(ofSize: 14),
@@ -46,7 +46,7 @@ for scale in [1, 2] {
         in: NSRect(x: 315, y: 193, width: 30, height: 26), from: .zero, operation: .sourceOver, fraction: 0.35
     )
     text(
-        "Drag BendMac to Applications", top: 327, height: 26, font: .systemFont(ofSize: 15, weight: .medium),
+        "Drag Fold to Applications", top: 327, height: 26, font: .systemFont(ofSize: 15, weight: .medium),
         color: .init(calibratedWhite: 0.2, alpha: 1))
     text(
         "Free and open source · macOS 14+ · Apple silicon", top: 369, height: 20,

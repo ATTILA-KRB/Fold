@@ -105,7 +105,7 @@ final class OverlayWindow: NSPanel {
         capture.onError = { [weak self] error in
             guard let self else { return }
             if Self.requiresUserAction(error) {
-                self.disable(message: "Screen capture stopped. Enable BendMac again when you are ready.")
+                self.disable(message: "Screen capture stopped. Enable Fold again when you are ready.")
             } else {
                 self.interrupt(message: "Capture interrupted: \(error.localizedDescription)")
             }
@@ -316,7 +316,7 @@ final class OverlayWindow: NSPanel {
             starting = false
             if Self.requiresUserAction(error) {
                 status =
-                    "Allow BendMac in System Settings → Privacy & Security → Screen & System Audio Recording, then try again."
+                    "Allow Fold in System Settings → Privacy & Security → Screen & System Audio Recording, then try again."
                 return .needsAttention
             }
             status = "Could not connect: \(error.localizedDescription)"
@@ -473,7 +473,7 @@ final class OverlayWindow: NSPanel {
             guard let self else { return }
             let report =
                 "frames=\(self.capture.frameCount) overlay=\(self.overlay?.isVisible == true) progress=\(self.progress) sensor=\(self.sensorAngle ?? -1)\n"
-            try? report.write(toFile: "/tmp/bendmac-smoke.txt", atomically: true, encoding: .utf8)
+            try? report.write(toFile: "/tmp/fold-smoke.txt", atomically: true, encoding: .utf8)
             self.disable(message: "Live desktop test complete. Enable to follow your lid.")
             self.manualAngle = savedManualAngle
             self.followLid = savedFollowLid

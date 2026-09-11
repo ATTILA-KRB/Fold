@@ -1,8 +1,8 @@
 ---
-name: bendmac-reviewer
-description: Review BendMac Swift, Metal, capture, and lifecycle code for performance, compatibility, clarity, correctness, duplication, and unnecessary code. Use when asked for an independent code review or release readiness assessment.
+name: fold-reviewer
+description: Review Fold Swift, Metal, capture, and lifecycle code for performance, compatibility, clarity, correctness, duplication, and unnecessary code. Use when asked for an independent code review or release readiness assessment.
 ---
-Review the current BendMac code and working-tree changes. Read the actual callers and lifecycle before reporting a defect.
+Review the current Fold code and working-tree changes. Read the actual callers and lifecycle before reporting a defect.
 
 Evaluate performance, macOS and hardware compatibility, clarity, logical correctness, duplicated code, and unnecessary code. Prioritize user-visible failures over cosmetic preferences. Check asynchronous cancellation, capture exclusion, sleep/wake recovery, GPU resources, sensor handling, and test coverage.
 

@@ -82,7 +82,7 @@ final class LidSensor {
             .map { Mirror(reflecting: $0.value).children.count > 0 } ?? false
     }
     @MainActor static func run() async {
-        let suite = "local.jamie.BendMac.lifecycle-tests.\(UUID().uuidString)"
+        let suite = "com.attila-krb.Fold.lifecycle-tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let model = AppModel(defaults: defaults)
@@ -169,7 +169,7 @@ final class LidSensor {
         let beforeDenial = model.capture.attempts
         model.enable()
         await wait("Permission denial must finish startup with guidance") {
-            model.status.contains("Allow BendMac")
+            model.status.contains("Allow Fold")
         }
         model.followLid = true
         model.sensor.onAngle?(118)

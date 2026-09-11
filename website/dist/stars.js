@@ -1,12 +1,12 @@
 const link = document.getElementById('github-stars');
 const counter = document.getElementById('star-count');
-const cacheKey = 'bendmac-github-stars';
+const cacheKey = 'fold-github-stars';
 const cacheLifetime = 5 * 60 * 1000;
 
 function showCount(count) {
   counter.textContent = new Intl.NumberFormat('en').format(count);
   counter.hidden = false;
-  link.setAttribute('aria-label', `Star BendMac on GitHub (${count} stars)`);
+  link.setAttribute('aria-label', `Star Fold on GitHub (${count} stars)`);
 }
 
 function readCache() {
@@ -30,7 +30,7 @@ async function updateStars() {
   }
 
   try {
-    const response = await fetch('https://api.github.com/repos/IuCC123/BendMac', {
+    const response = await fetch('https://api.github.com/repos/ATTILA-KRB/Fold', {
       headers: { Accept: 'application/vnd.github+json' },
       signal: AbortSignal.timeout(6000),
     });

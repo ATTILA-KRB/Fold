@@ -1,6 +1,6 @@
 /*
  * THESIS: A floating, folded sculpture made entirely of text, at hero scale.
- * OWN-WORLD: BendMac's neutral surface, with blue and violet typographic shading.
+ * OWN-WORLD: Fold's neutral surface, with blue and violet typographic shading.
  * STORY: The sculpture bends softly, echoing the desktop's response to the lid.
  * FIRST VIEWPORT: A large open loop frames the centered headline and real Mac demo.
  * FORM: Reference-led ASCII material; the existing page composition is preserved.

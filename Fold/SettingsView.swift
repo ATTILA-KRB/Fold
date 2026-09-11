@@ -55,7 +55,6 @@ struct SettingsView: View {
     @State private var page = SettingsPage.appearance
     @State private var history: [SettingsPage] = []
     @State private var forwardHistory: [SettingsPage] = []
-    @State private var coffeeHovered = false
 
     var body: some View {
         HStack(spacing: 0) {
@@ -116,48 +115,12 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(page == item ? .isSelected : [])
             }
-            Text("BendMac \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
+            Text("Fold \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")")
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 10)
                 .padding(.top, 12)
             Spacer()
-            Link(destination: URL(string: "https://buymeacoffee.com/jamiepen")!) {
-                Label {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Buy me a coffee")
-                            .font(.system(size: 11, weight: .medium))
-                        Text("Optional. Always free.")
-                            .font(.system(size: 9))
-                            .foregroundStyle(.secondary)
-                    }
-                } icon: {
-                    Image(systemName: "cup.and.saucer.fill")
-                        .foregroundStyle(.orange)
-                        .offset(y: coffeeHovered && !reduceMotion ? -1 : 0)
-                }
-                .labelStyle(SidebarLabelStyle())
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 10)
-                .frame(height: 46)
-                .background(
-                    Color.orange.opacity(coffeeHovered ? 0.14 : 0.06),
-                    in: RoundedRectangle(cornerRadius: 8)
-                )
-                .overlay {
-                    RoundedRectangle(cornerRadius: 8)
-                        .strokeBorder(Color.orange.opacity(coffeeHovered ? 0.25 : 0.12))
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .onHover { coffeeHovered = $0 }
-            .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: coffeeHovered)
-            .help(
-                "Support Jamie’s student project. Opens Buy Me a Coffee in your browser. BendMac stays completely free."
-            )
-            .padding(.bottom, 8)
             Button(action: updates.checkForUpdates) {
                 Label(
                     updates.availableVersion == nil ? "Check for updates" : "Update available",
@@ -260,14 +223,14 @@ struct SettingsView: View {
                     model.starting
                         ? "Connecting…"
                         : model.enabled
-                            ? "Enabled" : model.wantsEnabled ? "Needs attention" : "Enable BendMac"
+                            ? "Enabled" : model.wantsEnabled ? "Needs attention" : "Enable Fold"
                 )
                 .font(.system(size: 11)).foregroundStyle(.secondary)
             }
             .toggleStyle(.switch)
             .controlSize(.mini)
             .fixedSize()
-            .accessibilityLabel("Enable BendMac")
+            .accessibilityLabel("Enable Fold")
         }
         .buttonStyle(.plain)
         .foregroundStyle(.primary)
@@ -411,7 +374,7 @@ struct SettingsView: View {
                             })
                     ) {
                         SettingCaption(
-                            title: model.starting ? "Connecting…" : "Enable BendMac",
+                            title: model.starting ? "Connecting…" : "Enable Fold",
                             detail: "Let your desktop follow the lid.")
                     }
                     .toggleStyle(.switch).controlSize(.small).padding(14)
@@ -437,7 +400,7 @@ struct SettingsView: View {
                     Label("Your desktop stays on your Mac", systemImage: "lock.shield")
                         .font(.system(size: 13, weight: .medium))
                     Text(
-                        "BendMac needs Screen Recording permission to apply the effect to your desktop. Frames stay in memory. No audio, saved recordings, or uploads."
+                        "Fold needs Screen Recording permission to apply the effect to your desktop. Frames stay in memory. No audio, saved recordings, or uploads."
                     )
                     .font(.system(size: 12)).foregroundStyle(.secondary).fixedSize(
                         horizontal: false, vertical: true)
@@ -452,14 +415,14 @@ struct SettingsView: View {
                 }
                 .padding(16).frame(maxWidth: .infinity, alignment: .leading)
             }
-            SettingsSection("Using BendMac") {
+            SettingsSection("Using Fold") {
                 VStack(spacing: 0) {
                     informationRow(
                         "Pause instantly", detail: "Press Escape while the effect is visible.",
                         symbol: "escape")
                     rowDivider
                     informationRow(
-                        "Always close by", detail: "Closing this window leaves BendMac in the menu bar.",
+                        "Always close by", detail: "Closing this window leaves Fold in the menu bar.",
                         symbol: "menubar.rectangle")
                     rowDivider
                     informationRow(
@@ -528,7 +491,7 @@ struct SettingsView: View {
         VStack(spacing: 24) {
             VStack(spacing: 10) {
                 Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 76, height: 76)
-                Text("BendMac").font(.system(size: 23, weight: .semibold))
+                Text("Fold").font(.system(size: 23, weight: .semibold))
                 Text("A little flexibility for your desktop.").font(.system(size: 12)).foregroundStyle(
                     .secondary)
             }.padding(.vertical, 18)
@@ -536,7 +499,7 @@ struct SettingsView: View {
                 HStack {
                     SettingCaption(
                         title: updates.availableVersion.map { "Version \($0) is available" }
-                            ?? "Keep BendMac up to date",
+                            ?? "Keep Fold up to date",
                         detail: "Download and install updates without leaving the app.")
                     Spacer()
                     Button(
@@ -550,13 +513,13 @@ struct SettingsView: View {
             SettingsSection("Free & open source") {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(
-                        "BendMac is free to use and released under the MIT license. Bug reports, ideas, and contributions are welcome."
+                        "Fold is free to use and released under the MIT license. Bug reports, ideas, and contributions are welcome."
                     )
                     .font(.system(size: 12)).foregroundStyle(.secondary)
                     HStack {
-                        Link("Website ↗", destination: URL(string: "https://bendmac.app")!)
+                        Link("Releases ↗", destination: URL(string: "https://github.com/ATTILA-KRB/Fold/releases")!)
                         Spacer()
-                        Link("GitHub ↗", destination: URL(string: "https://github.com/IuCC123/BendMac")!)
+                        Link("GitHub ↗", destination: URL(string: "https://github.com/ATTILA-KRB/Fold")!)
                     }.font(.system(size: 12))
                 }.padding(16)
             }
