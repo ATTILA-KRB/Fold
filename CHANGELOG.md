@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Pausing the effect could leave a full-screen panel ordered above the menu bar, showing a frozen desktop and hiding the menu bar item: the app looked crashed and nothing blurred. Every overlay a session creates is now hidden when the effect stops, not only the most recent one.
 - The folded sheet no longer leaves flat-black wedges on either side. The area outside the sheet continues the desktop, blurred and slightly darkened, instead of being multiplied to zero. At full fold the black area was up to 23.5% of the screen.
 - The sheet's silhouette fades over a wider band, so the fold reads as a soft transition rather than a hard diagonal edge.
 

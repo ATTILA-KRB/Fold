@@ -47,6 +47,11 @@ final class OverlayWindow: NSPanel {
     let sensor = LidSensor()
     lazy var capture = DesktopCapture(frames: frames)
     var overlay: OverlayWindow?
+    /// Every overlay window this session created. A fronted overlay that loses
+    /// its reference is never ordered out, so it stays above the status bar
+    /// showing a frozen desktop and hiding the menu bar item: the effect looks
+    /// dead and the app looks crashed. Hide from this list, not from `overlay`.
+    private var overlays: [OverlayWindow] = []
     var renderer: BendRenderer?
     private var metalView: MTKView?
     private var timer: Timer?
@@ -64,6 +69,18 @@ final class OverlayWindow: NSPanel {
     private var lastTime = CACurrentMediaTime()
     private var playStart = 0.0
     private var wasFolded = false
+
+    /// Overlay panels this process still has on screen. Must be zero whenever
+    /// the effect is off; anything else is a panel frozen above the menu bar.
+    private var visibleOverlayCount: Int {
+        let info = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
+        let me = Int(ProcessInfo.processInfo.processIdentifier)
+        return info.filter {
+            ($0[kCGWindowOwnerPID as String] as? Int) == me
+                && ($0[kCGWindowLayer as String] as? Int) == NSWindow.Level.statusBar.rawValue + 1
+                && ($0[kCGWindowIsOnscreen as String] as? Bool) == true
+        }.count
+    }
 
     private var restoringPreferences = true
     private let defaults: UserDefaults
@@ -293,6 +310,7 @@ final class OverlayWindow: NSPanel {
             window.setFrame(screen.frame, display: true)
             self.renderer = renderer
             overlay = window
+            overlays.append(window)
             metalView = view
             // Register the hidden overlay before querying shareable content, including at login.
             captureAttempted = true
@@ -359,6 +377,8 @@ final class OverlayWindow: NSPanel {
         }
     }
     private func clearOverlay() {
+        for window in overlays { window.orderOut(nil) }
+        overlays.removeAll()
         overlay?.orderOut(nil)
         metalView?.isPaused = true
         overlay = nil
@@ -471,12 +491,26 @@ final class OverlayWindow: NSPanel {
         manualAngle = 42
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
             guard let self else { return }
+            // `overlaysVisibleWhileFolded` proves the counter below can see a
+            // panel at all: it must be 1 here and 0 once the effect is off.
             let report =
-                "frames=\(self.capture.frameCount) overlay=\(self.overlay?.isVisible == true) progress=\(self.progress) sensor=\(self.sensorAngle ?? -1)\n"
+                "frames=\(self.capture.frameCount) overlay=\(self.overlay?.isVisible == true) progress=\(self.progress) sensor=\(self.sensorAngle ?? -1) overlaysVisibleWhileFolded=\(self.visibleOverlayCount)\n"
             try? report.write(toFile: "/tmp/fold-smoke.txt", atomically: true, encoding: .utf8)
             self.disable(message: "Live desktop test complete. Enable to follow your lid.")
             self.manualAngle = savedManualAngle
             self.followLid = savedFollowLid
+            // The teardown is asynchronous; check once it has settled that no
+            // overlay survived, because a survivor is invisible to every other
+            // check in this repository.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+                guard let self else { return }
+                let line = "overlaysVisibleAfterDisable=\(self.visibleOverlayCount)\n"
+                if let handle = FileHandle(forWritingAtPath: "/tmp/fold-smoke.txt") {
+                    handle.seekToEndOfFile()
+                    handle.write(Data(line.utf8))
+                    try? handle.close()
+                }
+            }
         }
     }
 }
