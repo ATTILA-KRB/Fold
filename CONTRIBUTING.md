@@ -22,6 +22,8 @@ Use native macOS frameworks. Do not introduce screen-content uploads, persistent
 
 Preserve keyboard access and reduced-motion behavior. Keep the landing page's Bendy attribution. Use public, shareable test content in demonstrations.
 
+The app icon is generated, not hand-drawn: `scripts/icon.swift --variant refined --icns Fold/AppIcon.icns` (the same script writes `website/dist/assets/icon.png` with `--preview`). Keep the icon and the site's favicon from the same variant so they cannot drift.
+
 ## Upstream
 
 Fold is a fork of [BendMac](https://github.com/IuCC123/BendMac). The upstream repository is configured as the `upstream` remote:
