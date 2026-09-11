@@ -1,6 +1,17 @@
 # Changelog
 
-## 1.0.0 - Unreleased
+## 1.0.1 - Unreleased
+
+### Fixed
+
+- The folded sheet no longer leaves flat-black wedges on either side. The area outside the sheet continues the desktop, blurred and slightly darkened, instead of being multiplied to zero. At full fold the black area was up to 23.5% of the screen.
+- The sheet's silhouette fades over a wider band, so the fold reads as a soft transition rather than a hard diagonal edge.
+
+### Changed
+
+- Blur ramps in across the whole upper half (`pow(height, 2.1)` instead of `3.5`, radius 52) instead of arriving almost entirely at the very top.
+
+## 1.0.0 - 2026-09-11
 
 First release under the Fold identity. Fold is a rebranded fork of BendMac 0.4.8; the effect, sensor access and capture pipeline are unchanged from that baseline.
 

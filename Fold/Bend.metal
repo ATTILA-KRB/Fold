@@ -23,7 +23,9 @@ fragment float4 bendFragment(VertexOut in [[stage_in]], texture2d<float> desktop
     float hingeWeight=smoothstep(0.0,0.22,height);
     // Concentrate defocus at the upper edge, including the menu bar. Keeping
     // the centre readable avoids making the whole desktop look out of focus.
-    float radius=48.0*fold*pow(height,3.5)*(p.style>1.5 ? 1.25 : 1.0);
+    // A 2.1 power makes the blur arrive progressively across the upper half
+    // instead of snapping in at the very top.
+    float radius=52.0*fold*pow(height,2.1)*(p.style>1.5 ? 1.25 : 1.0);
     float3 color;
     if (p.blur<0.001) color=desktop.sample(s,uv).rgb;
     else if(radius<4.0) color=mix(desktop.sample(s,uv).rgb,fine.sample(s,uv).rgb,smoothstep(0.0,4.0,radius));
@@ -31,12 +33,18 @@ fragment float4 bendFragment(VertexOut in [[stage_in]], texture2d<float> desktop
     else if(radius<28.0) color=mix(soft.sample(s,uv).rgb,medium.sample(s,uv).rgb,smoothstep(10.0,28.0,radius));
     else color=mix(medium.sample(s,uv).rgb,strong.sample(s,uv).rgb,smoothstep(28.0,64.0,radius));
     // Feather the sides, not a horizontal black strip across the top.
-    float feather=max(fwidth(in.uv.x),0.0025*fold*height);
+    // A wider feather turns the sheet's silhouette into a soft transition:
+    // a hairline here reads as a hard diagonal edge on a real desktop.
+    float feather=max(fwidth(in.uv.x),0.012*fold*height);
     float edge=min(in.uv.x-inset,1.0-inset-in.uv.x);
     float coverage=smoothstep(-feather,feather,edge);
+    // Outside the sheet the desktop must continue, never fall to black: the
+    // sampler clamps to the edge, and the gap only darkens where the sheet
+    // turns away from the viewer.
+    color*=mix(0.62,1.0,coverage);
     float sideShade=exp(-max(edge,0.0)/0.035)*fold*p.shadow*0.22*height*hingeWeight;
     if(p.style>0.5 && p.style<1.5) sideShade*=1.6;
     color*=1.0-sideShade;
     if(p.style>1.5) color=mix(color,float3(0.86,0.9,0.94),fold*pow(height,2.3)*0.08);
-    return float4(color*coverage,1);
+    return float4(color,1);
 }
