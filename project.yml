@@ -1,6 +1,6 @@
-name: BendMac
+name: Fold
 options:
-  bundleIdPrefix: local.jamie
+  bundleIdPrefix: com.attila-krb
   deploymentTarget:
     macOS: '14.0'
 settings:
@@ -16,41 +16,41 @@ packages:
     url: https://github.com/sparkle-project/Sparkle
     exactVersion: 2.9.6
 targets:
-  BendMac:
+  Fold:
     type: application
     platform: macOS
-    sources: [BendMac]
+    sources: [Fold]
     info:
-      path: BendMac/Info.plist
+      path: Fold/Info.plist
       properties:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSUIElement: true
         CFBundleIconFile: AppIcon
-        SUFeedURL: https://raw.githubusercontent.com/IuCC123/BendMac/main/docs/appcast.xml
-        SUPublicEDKey: 'iUPmfmMW4EovxYx3kXOHVfcOT9oeGCc3EMIx5p4wJ44='
+        SUFeedURL: https://raw.githubusercontent.com/ATTILA-KRB/Fold/main/docs/appcast.xml
+        SUPublicEDKey: 'Wqj3SXKxnYgGMg4W3JyX34BTEyOMPH4F5yub2u8kjgo='
         SUVerifyUpdateBeforeExtraction: true
         SUEnableAutomaticChecks: true
         SUScheduledCheckInterval: 21600
         SUAutomaticallyUpdate: false
         SUSendProfileInfo: false
     entitlements:
-      path: BendMac/BendMac.entitlements
+      path: Fold/Fold.entitlements
       properties:
         # Ad-hoc signatures have no Team ID for matching the embedded framework.
         # Remove this exception when migrating to Developer ID distribution.
         com.apple.security.cs.disable-library-validation: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: local.jamie.BendMac
+        PRODUCT_BUNDLE_IDENTIFIER: com.attila-krb.Fold
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_LSUIElement: YES
         INFOPLIST_KEY_CFBundleIconFile: AppIcon
-        INFOPLIST_KEY_NSHumanReadableCopyright: 'Copyright 2026 BendMac contributors. MIT License.'
-        INFOPLIST_KEY_CFBundleDisplayName: BendMac
+        INFOPLIST_KEY_NSHumanReadableCopyright: 'Copyright 2026 Fold contributors. MIT License.'
+        INFOPLIST_KEY_CFBundleDisplayName: Fold
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
-        MARKETING_VERSION: '0.4.8'
-        CURRENT_PROJECT_VERSION: '12'
+        MARKETING_VERSION: '1.0.0'
+        CURRENT_PROJECT_VERSION: '1'
     dependencies:
       - package: Sparkle
       - sdk: AppKit.framework

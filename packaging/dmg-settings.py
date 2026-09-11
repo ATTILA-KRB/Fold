@@ -1,4 +1,4 @@
-"""Finder layout for the BendMac drag-to-install disk image."""
+"""Finder layout for the Fold drag-to-install disk image."""
 import os
 
 application = defines['app']
@@ -8,7 +8,7 @@ volume_icon = os.path.join(application, 'Contents', 'Resources', 'AppIcon.icns')
 background = defines['background']
 format = 'UDZO'
 window_rect = ((200, 140), (660, 420))
-icon_locations = {'BendMac.app': (180, 212), 'Applications': (480, 212)}
+icon_locations = {'Fold.app': (180, 212), 'Applications': (480, 212)}
 icon_size = 80
 text_size = 13
 show_status_bar = False

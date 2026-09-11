@@ -5,7 +5,7 @@ enum CaptureError: LocalizedError {
     case applicationUnavailable
 
     var errorDescription: String? {
-        "BendMac could not safely exclude its own windows from screen capture. Try enabling it again."
+        "Fold could not safely exclude its own windows from screen capture. Try enabling it again."
     }
 }
 
@@ -13,7 +13,7 @@ final class DesktopCapture: NSObject, SCStreamOutput, SCStreamDelegate {
     let frames: FrameStore
     @MainActor private var stream: SCStream?
     @MainActor private var config: SCStreamConfiguration?
-    private let queue = DispatchQueue(label: "local.jamie.BendMac.capture", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "com.attila-krb.Fold.capture", qos: .userInteractive)
     var onError: ((Error) -> Void)?
     var onFirstFrame: (() -> Void)?
     private let countLock = NSLock()

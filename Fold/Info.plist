@@ -27,9 +27,9 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://raw.githubusercontent.com/IuCC123/BendMac/main/docs/appcast.xml</string>
+	<string>https://raw.githubusercontent.com/ATTILA-KRB/Fold/main/docs/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>iUPmfmMW4EovxYx3kXOHVfcOT9oeGCc3EMIx5p4wJ44=</string>
+	<string>Wqj3SXKxnYgGMg4W3JyX34BTEyOMPH4F5yub2u8kjgo=</string>
 	<key>SUScheduledCheckInterval</key>
 	<integer>21600</integer>
 	<key>SUSendProfileInfo</key>

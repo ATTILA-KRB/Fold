@@ -15,12 +15,12 @@ jobs:
           if ! xcrun metal --version; then
             xcodebuild -downloadComponent MetalToolchain
           fi
-          xcodebuild -project BendMac.xcodeproj -scheme BendMac -configuration Release -derivedDataPath build CODE_SIGN_IDENTITY=- build
+          xcodebuild -project Fold.xcodeproj -scheme Fold -configuration Release -derivedDataPath build CODE_SIGN_IDENTITY=- build
       - name: Verify animation math
         run: |
-          swiftc BendMac/BendMath.swift Tests/main.swift -o /tmp/bendmac-tests
-          /tmp/bendmac-tests
+          swiftc Fold/BendMath.swift Tests/main.swift -o /tmp/fold-tests
+          /tmp/fold-tests
       - uses: actions/upload-artifact@v4
         with:
-          name: BendMac-build
-          path: build/Build/Products/Release/BendMac.app
+          name: Fold-build
+          path: build/Build/Products/Release/Fold.app

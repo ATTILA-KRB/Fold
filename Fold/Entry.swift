@@ -12,10 +12,10 @@ import SwiftUI
         model = AppModel()
         updates.start()
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "macbook", accessibilityDescription: "BendMac")
-        statusItem.button?.toolTip = "BendMac — desktop fold"
+        statusItem.button?.image = NSImage(systemSymbolName: "macbook", accessibilityDescription: "Fold")
+        statusItem.button?.toolTip = "Fold — desktop fold"
         let menu = NSMenu()
-        menu.addItem(withTitle: "BendMac", action: nil, keyEquivalent: "")
+        menu.addItem(withTitle: "Fold", action: nil, keyEquivalent: "")
         menu.addItem(.separator())
         let toggle = menu.addItem(
             withTitle: "Enable / pause effect", action: #selector(toggleEffect), keyEquivalent: "")
@@ -32,7 +32,7 @@ import SwiftUI
         updateItem.target = updates
         menu.addItem(.separator())
         menu.addItem(
-            withTitle: "Quit BendMac", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+            withTitle: "Quit Fold", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         statusItem.menu = menu
         // Login launches stay quiet. A deliberate launch opens settings even
         // when the effect is restored from the previous session.
@@ -67,7 +67,7 @@ import SwiftUI
                 styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false)
-            window.title = "BendMac"
+            window.title = "Fold"
             window.titlebarAppearsTransparent = true
             window.isOpaque = false
             window.backgroundColor = .clear
@@ -96,7 +96,7 @@ import SwiftUI
     }
     func applicationWillTerminate(_ notification: Notification) { model.disable(preserveIntent: true) }
 }
-@main enum BendMacMain {
+@main enum FoldMain {
     @MainActor static func main() {
         if CommandLine.arguments.contains("--sensor-check") {
             let sensor = LidSensor()

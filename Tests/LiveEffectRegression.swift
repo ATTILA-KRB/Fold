@@ -7,7 +7,7 @@ import AppKit
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         Task { @MainActor in
-            let suite = "local.jamie.BendMac.live-tests.\(UUID().uuidString)"
+            let suite = "com.attila-krb.Fold.live-tests.\(UUID().uuidString)"
             let defaults = UserDefaults(suiteName: suite)!
             let model = AppModel(defaults: defaults)
             do {

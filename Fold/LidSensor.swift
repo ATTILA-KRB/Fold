@@ -7,7 +7,7 @@ final class LidSensor {
     private let manager = IOHIDManagerCreate(kCFAllocatorDefault, IOOptionBits(kIOHIDOptionsTypeNone))
     private var device: IOHIDDevice?
     private var timer: DispatchSourceTimer?
-    private let queue = DispatchQueue(label: "local.jamie.BendMac.lid", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "com.attila-krb.Fold.lid", qos: .userInteractive)
     enum PollingMode { case idle, watching, active }
     private var mode: PollingMode = .idle
     private var suspended = false
