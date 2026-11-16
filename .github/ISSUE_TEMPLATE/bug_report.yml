@@ -1,0 +1,41 @@
+name: Bug report
+description: Something in Fold does not work as expected
+labels: [bug]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: MacBook model
+      placeholder: MacBook Air M5, 13-inch
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: macOS 26.1
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Fold version
+      placeholder: 1.0.1
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: For animation issues, include the lid position and your perspective/blur/shadow settings.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Please do not attach screenshots of private desktop content, credentials or hardware serial numbers.

@@ -1,0 +1,22 @@
+name: Hardware compatibility report
+description: Tell us whether Fold works on your MacBook model
+labels: [hardware]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: MacBook model and chip
+    validations:
+      required: true
+  - type: dropdown
+    id: sensor
+    attributes:
+      label: Does the lid angle follow your lid?
+      options: [Yes, Partially, No]
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Output of `Fold --sensor-check` is useful if the sensor does not respond.
