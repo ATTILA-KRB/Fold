@@ -4,7 +4,7 @@ Fold is free and open source. Contributions are welcome, including small fixes a
 
 ## Report a problem
 
-Open an issue with your MacBook model, macOS version, Fold version, and steps to reproduce it. For animation feedback, describe the lid position and your perspective/blur/shadow settings. Never include private desktop content, credentials, or hardware serial numbers.
+Use the [issue forms](https://github.com/ATTILA-KRB/Fold/issues/new/choose): a bug report, or a hardware compatibility report if you only want to tell us whether your model works. Questions and ideas belong in [Discussions](https://github.com/ATTILA-KRB/Fold/discussions). Include your MacBook model, macOS version, Fold version, and steps to reproduce it. For animation feedback, describe the lid position and your perspective/blur/shadow settings. Never include private desktop content, credentials, or hardware serial numbers.
 
 ## Send a change
 
@@ -12,7 +12,7 @@ Open an issue with your MacBook model, macOS version, Fold version, and steps to
 2. Open `Fold.xcodeproj` in Xcode or use `scripts/build.sh`.
 3. Keep the change focused and explain what it fixes. Format Swift files with `xcrun swift-format format --in-place --recursive Fold Tests scripts`.
 4. Run `scripts/verify.sh` for animation, lifecycle, or sensor changes. This includes `scripts/verify-lifecycle.sh`, which tests the real app model with controlled sensor/capture failures and isolated preferences, without displaying an overlay. For capture or startup changes, also run `scripts/verify-capture.sh` on a logged-in Mac with Screen Recording permission. This briefly displays a magenta test square. It checks safe startup without visible windows and verifies that a colored overlay stays out of captured frames across reconnects; it saves no screen content. For full effect lifecycle changes, run `scripts/verify-live-effect.sh` after building: it briefly bends and clears the desktop three times using isolated settings, and checks that pausing clears frames and stops the model timer. Test on a real Mac when possible and say what you could not verify.
-5. Open a pull request with the relevant validation results.
+5. Open a pull request and fill in the template, with the relevant validation results.
 
 ## Design and implementation
 
