@@ -1,5 +1,10 @@
 # Fold
 
+[![Build](https://github.com/ATTILA-KRB/Fold/actions/workflows/build.yml/badge.svg)](https://github.com/ATTILA-KRB/Fold/actions/workflows/build.yml)
+[![Latest release](https://img.shields.io/github/v/release/ATTILA-KRB/Fold)](https://github.com/ATTILA-KRB/Fold/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/ATTILA-KRB/Fold)](LICENSE)
+![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
+
 [![Fold demo](docs/demo.gif)](docs/demo.gif)
 
 [Download for Mac](https://github.com/ATTILA-KRB/Fold/releases/latest/download/Fold-macOS.dmg)
